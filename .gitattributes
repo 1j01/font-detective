@@ -1,0 +1,14 @@
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# These files are text and should be normalized (convert crlf to lf)
+*.coffee text
+*.html text
+*.css text
+*.js text
+
+# Binary flash formats should be left as-is
+*.swf binary
+*.swc binary
+*.fla binary
