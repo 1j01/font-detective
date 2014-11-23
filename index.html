@@ -3,15 +3,59 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Font Detective</title>
-		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/reset/reset-min.css" /> 
-		<link rel="stylesheet" type="text/css" href="stylesheets/font-detect.css" />  
-		<link rel="stylesheet" type="text/css" href="stylesheets/font-detect-print.css" media="print" />
+		<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.5.2/build/reset/reset-min.css" />
+		<style>
+			
+			body {
+				font-family: "Lucida Grande", Lucida, Helvetica, Arial, Verdana, sans-serif;
+				font-size: 12px;
+				background-color: white;
+				color: black;
+				margin: 0px auto;
+				text-align: center;
+				width: 900px;
+				padding-top: 10px;
+				max-width: 100%;
+			}
+			#content {
+				text-align: left;
+			}
+			
+			.sample-text {
+				padding: 10px 0;
+				border: 1px solid #FFF;
+			}
+			.sample-text:hover {
+				border: 1px dashed #CCC;
+			}
+			.sample-text:focus {
+				border: 1px dashed #555;
+			}
+			.sample-text * {
+				font-family: inherit;
+			}
+			.sample-font-family {
+				position: relative;
+				top: -14px;
+				left: 0px;
+				width: 100%;
+				font-family: Monaco, sans-serif;
+				font-size: 12px;
+			}
+			
+			@media print {
+				.no-print {
+					display: none;
+				}
+			}
+			
+		</style>
 		<meta name="viewport" content="width=device-width" />
 	</head>
 	<body>
 		
 		<div id="content">
-			<div class="noprint">
+			<div class="no-print">
 				<p id="status">Hello</p>
 			</div>
 		</div>
@@ -19,7 +63,7 @@
 		<script src="lib/jquery.min.js"></script>
 		<script src="lib/swfobject.js"></script>
 		<script src="lib/coffee-script.js"></script>
-		<script src="font-detective.coffee" type="text/coffeescript"></script>  
+		<script src="font-detective.coffee" type="text/coffeescript"></script>	
 		<script type="text/coffeescript"> $ ->
 			
 			statusError = (message)-> $("#status").text(message).css(color: "#a00")
