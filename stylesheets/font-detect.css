@@ -8,6 +8,7 @@ body {
   text-align: center;
   width: 900px;
   padding-top: 10px;
+  max-width: 100%;
 }
 #content {
   text-align: left;
