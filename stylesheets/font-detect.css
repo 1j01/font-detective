@@ -1,3 +1,4 @@
+
 body {
   font-family: "Lucida Grande", Lucida, Helvetica, Arial, Verdana, sans-serif;
   font-size: 12px;
@@ -8,14 +9,13 @@ body {
   width: 900px;
   padding-top: 10px;
 }
-
-p, .sample-font-family {
+#content {
   text-align: left;
 }
 
 .sample-text {
-  border: 1px solid #FFF;
   padding: 10px 0;
+  border: 1px solid #FFF;
 }
 .sample-text:hover {
   border: 1px dashed #CCC;
@@ -23,7 +23,9 @@ p, .sample-font-family {
 .sample-text:focus {
   border: 1px dashed #555;
 }
-
+.sample-text * {
+  font-family: inherit;
+}
 .sample-font-family {
   position: relative;
   top: -14px;
