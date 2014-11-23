@@ -29,7 +29,7 @@ do (exports = window)->
 	# The container for all font-detective-related uglyness
 	container = document.createElement "div"
 	container.id = "font-detective"
-	# The <body> won't always exist, so append this later
+	# The document body won't always exist, so append this later
 	# document.body.appendChild container
 	
 	# An element whose only purpose is to be replaced (how sad)
@@ -43,14 +43,10 @@ do (exports = window)->
 	
 	
 	class Font
-		constructor: ({fontName, fontType, fontStyle})->
-			@family = '"' + fontName.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'
-			@name = fontName
-			@type = fontType
-			@style = fontStyle
-		
+		constructor: (@name, @type, @style)->
 		toString: ->
-			@family
+			# Escape \ -> \\ and " -> \" (in that order)
+			'"' + @name.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'
 	
 	
 	# Based off of http://www.lalit.org/lab/javascript-css-font-detect
@@ -61,9 +57,10 @@ do (exports = window)->
 		# (which implies it didn't fall back to the base font), then the font is available
 		baseFontFamilies = ["monospace", "sans-serif", "serif"]
 		
-		# We use m or w because these two characters take up the maximum width
-		# We use a lli so that some matching fonts can get separated
+		# We use m or w because they take up the maximum width
+		# We use thin letters so that some matching fonts can get separated
 		testString = "mmmmmmmmmmlli"
+		# This seems to work just as well with the empty string, though
 		
 		# We test using 72px font size; it doesn't matter much
 		testSize = "72px"
@@ -76,7 +73,7 @@ do (exports = window)->
 		baseHeights = {}
 		
 		init: ->
-			# Call this method on DOM load (when there's a document.body)
+			# Call this method once the document has a body
 			document.body.appendChild container
 			
 			for baseFontFamily in baseFontFamilies
@@ -102,52 +99,27 @@ do (exports = window)->
 			return no
 	
 	###
-	checkFont = (fontFamily)->
-		# We use Times New Roman as a fallback
-		return yes if fontFamily is "Times New Roman"
-		
-		# Ignore fonts like 'Arno Pro Semibold 18pt'
-		return no if /\d+pt\s*$/.test(fontFamily)
-		
-		familyWidth = checkOffsetWidth("#{fontFamily}, Times New Roman", "120px")
-		familyWidth isnt this.fallbackWidth()
-	
-	checkOffsetWidth = (family, size)->
-		el = document.createElement "span"
-		el.style.fontFamily = family
-		el.style.fontSize = size
-		el.style.display = "inline"
-		
-		# This was from http://www.lalit.org/lab/javascript-css-font-detect
-		el.textContent = el.innerText = "mmmmmmmmml" # m or w take up max width
-		container.appendChild el
-		width = el.offsetWidth
-		container.removeChild el
-		width
-	###
-	
-	###
 	# FontDetective.each(function callback(fontFamily){})
 	# Asynchronously iterate over each font, calling back for each one.
 	###
-	(FD.each = (callback)->
+	FD.each = (callback)->
 		
 		callback font for font in FD.testedFonts
 		
 		FD.each.callbacks.push callback
 		
-	).callbacks = []
+	FD.each.callbacks = []
 	
 	
 	###
 	# FontDetective.all(function callback(fontFamilies){})
 	# Call back when all fonts are detected and tested.
 	###
-	(FD.all = (callback)->
+	FD.all = (callback)->
 		
 		FD.all.callbacks.push callback
 		
-	).callbacks = []
+	FD.all.callbacks = []
 	
 	
 	
@@ -165,7 +137,7 @@ do (exports = window)->
 				throw err
 		
 		if swfobj
-			# @FIXME: don't fail / @TODO: allow multiple things to load fonts
+			# @TODO: allow multiple things to call load()
 			return fail "FontDetective.load() has already been called"
 		
 		unless document.body
@@ -176,8 +148,8 @@ do (exports = window)->
 			
 			fontAvailabilityChecker.init()
 			
-			for fontDefinition in fontDefinitions
-				font = new Font fontDefinition
+			for {fontName, fontType, fontStyle} in fontDefinitions
+				font = new Font fontName, fontType, fontStyle
 				# @TODO: chunked testing to avoid lag
 				available = fontAvailabilityChecker.check font
 				if available
@@ -194,7 +166,7 @@ do (exports = window)->
 		
 		document.body.appendChild container
 		
-		flashvars = swfObjectId: swfId # onReady: "onFontDetectReady"
+		flashvars = swfObjectId: swfId
 		params = allowScriptAccess: "always", menu: "false"
 		attributes = id: swfId, name: swfId
 		swfCallback = (e)->
@@ -202,6 +174,7 @@ do (exports = window)->
 				swf = e.ref
 				
 				# This is an ugly block of code...
+				# @TODO: remove timeouts and intervals
 				tid = setTimeout ->
 					warn = (message)->
 						if console?.warn
@@ -237,13 +210,13 @@ do (exports = window)->
 		# That is one dubious function signature
 		swfobj = swfobject.embedSWF(
 			FD.swf # specifies the URL of your SWF
-			dummy.id # specifies the id of the HTML element to have replaced by your Flash content
-			"1", "1" # width, height specify the dimensions of your SWF
+			dummy.id # specifies the id of the element to be replaced by your Flash content
+			"1", "1" # width and height specify the dimensions of your SWF
 			"9.0.0" # version specifies the Flash player version your SWF is published for
 			no # (optional) specifies the URL of an express install SWF and activates Adobe express install
-			flashvars # specifies your flashvars with name:value pairs
-			params # specifies nested <object> element <param>eter elements
-			attributes # specifies your <object> element's attributes
+			flashvars # specifies flashvars, a <param> specific to flash
+			params # specifies <param> elements (nested within the <object> element )
+			attributes # attributes of the <object> element
 			swfCallback # (SWFObject 2.2+) a callback function that is called on both success or failure
 		)
 		
