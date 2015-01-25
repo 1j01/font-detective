@@ -42,10 +42,12 @@ Uses JavaScript + Flash to detect your system fonts.
 * Load the SWF object and start detecting fonts
 
 ### `FontDetective.swf`
-* The location of the `FontList.swf` file, defaulting to `./flash/FontList.swf`
+* The location of the `FontList.swf` file, defaulting to `"./flash/FontList.swf"`
 
 ### `class Font`
 * The `font.name` property can be used to display the name of the font
+* The `font.style` property will probably always be `"regular"`
+* The `font.type` property will probably always be `"device"`
 * The font can be stringified and will be escaped for use in css, e.g. `font.toString()` or `(font + ", sans-serif")`
 
 
