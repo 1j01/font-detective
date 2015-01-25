@@ -32,20 +32,28 @@ Uses JavaScript + Flash to detect your system fonts.
 
 ## Documentation
 
-### FontDetective.each(function(font){})
+### `FontDetective.each(function(font){})`
 * Calls back with a `Font` every time a font is detected and tested
 
-### FontDetective.all(function(fonts){})
+### `FontDetective.all(function(fonts){})`
 * Calls back with an `Array` of `Font`s when all fonts are detected and tested
 
-### FontDetective.load()
+### `FontDetective.load()`
 * Load the SWF object and start detecting fonts
 
-### FontDetective.swf
-* The location of the FontList.swf file
-* Default: `./flash/FontList.swf`
+### `FontDetective.swf`
+* The location of the `FontList.swf` file, defaulting to `./flash/FontList.swf`
 
-### class Font
-* The font.name property can be used to display the name of the font
-* The font can be stringified and will be escaped for use in css, e.g. font.toString() or (font + ", sans-serif")
+### `class Font`
+* The `font.name` property can be used to display the name of the font
+* The font can be stringified and will be escaped for use in css, e.g. `font.toString()` or `(font + ", sans-serif")`
+
+
+## Todo
+
+* Check for common fonts even when Flash is unavailable
+
+* Add an optional argument to `FontDetective.load` that deprecates setting `FontDetective.swf`
+
+* Allow chaining? Load automatically?
 
