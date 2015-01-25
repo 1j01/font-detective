@@ -1,5 +1,5 @@
 
-# ![Font Detective](img/top-secret-stamp.regular.png)
+# ![Font Detective](img/font-detective.png)
 
 Uses JavaScript + Flash to detect your system fonts.
 
