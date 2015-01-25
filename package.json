@@ -1,0 +1,31 @@
+{
+  "name": "font-detective",
+  "version": "0.0.0",
+  "description": "Detect fonts in-browser",
+  "main": "font-detective.coffee",
+  "scripts": {
+    "build-swf": "mxmlc -warnings=false -debug=false -static-link-runtime-shared-libraries=true -optimize=true -o flash/FontList.swf -file-specs flash/src/FontList.as",
+    "start": "http-server -a localhost -o"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1j01/font-detective.git"
+  },
+  "keywords": [
+    "font",
+    "detective",
+    "typeface",
+    "detection",
+    "detect",
+    "fonts"
+  ],
+  "bugs": {
+    "url": "https://github.com/1j01/font-detective/issues"
+  },
+  "homepage": "https://github.com/1j01/font-detective",
+  "devDependencies": {
+    "coffee-script": "^1.8.0",
+    "flex-sdk": "^4.6.0-0",
+    "http-server": "^0.7.3"
+  }
+}
