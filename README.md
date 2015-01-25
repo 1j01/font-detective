@@ -1,4 +1,5 @@
-# Font Detective
+
+# ![Font Detective](img/top-secret-stamp.regular.png)
 
 Uses JavaScript + Flash to detect your system fonts.
 
@@ -10,7 +11,7 @@ Uses JavaScript + Flash to detect your system fonts.
 			
 			FontDetective.each(function(font){
 				$("<option>").val(font).text(font.name).appendTo("select");
-				font; // e.g. '"Arial"'
+				font.toString(); // e.g. '"Arial"'
 				font.name; // e.g. 'Arial'
 				font.style; // e.g. 'regular'
 				font.type; // e.g. 'device'
@@ -27,3 +28,24 @@ Uses JavaScript + Flash to detect your system fonts.
 			});
 		});
 	</script>
+
+
+## Documentation
+
+### FontDetective.each(function(font){})
+* Calls back with a `Font` every time a font is detected and tested
+
+### FontDetective.all(function(fonts){})
+* Calls back with an `Array` of `Font`s when all fonts are detected and tested
+
+### FontDetective.load()
+* Load the SWF object and start detecting fonts
+
+### FontDetective.swf
+* The location of the FontList.swf file
+* Default: `./flash/FontList.swf`
+
+### class Font
+* The font.name property can be used to display the name of the font
+* The font can be stringified and will be escaped for use in css, e.g. font.toString() or (font + ", sans-serif")
+

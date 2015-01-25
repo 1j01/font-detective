@@ -26,11 +26,10 @@ do (exports = window)->
 	FD.testedFonts = []
 	
 	
-	# The container for all font-detective-related uglyness
+	# The container for all font-detective related uglyness
 	container = document.createElement "div"
 	container.id = "font-detective"
-	# The document body won't always exist, so append this later
-	# document.body.appendChild container
+	# The document body won't always exist at this point, so append this later
 	
 	# An element whose only purpose is to be replaced (how sad)
 	dummy = document.createElement "div"
@@ -42,10 +41,16 @@ do (exports = window)->
 	swfId = "font-detective-flash"
 	
 	
+	###
+	# The font.name property can be used to display the name of the font
+	# 
+	# The font can be stringified and will be escaped for use in css
+	# e.g. font.toString() or (font + ", sans-serif")
+	###
 	class Font
 		constructor: (@name, @type, @style)->
 		toString: ->
-			# Escape \ -> \\ and " -> \" (in that order)
+			# Escape \ to \\ and " to \" (in that order), and surround with quotes
 			'"' + @name.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'
 	
 	
@@ -99,8 +104,8 @@ do (exports = window)->
 			return no
 	
 	###
-	# FontDetective.each(function callback(fontFamily){})
-	# Asynchronously iterate over each font, calling back for each one.
+	# FontDetective.each(function(font){})
+	# Calls back with a `Font` every time a font is detected and tested
 	###
 	FD.each = (callback)->
 		
@@ -112,8 +117,8 @@ do (exports = window)->
 	
 	
 	###
-	# FontDetective.all(function callback(fontFamilies){})
-	# Call back when all fonts are detected and tested.
+	# FontDetective.all(function(fonts){})
+	# Calls back with an `Array` of `Font`s when all fonts are detected and tested
 	###
 	FD.all = (callback)->
 		
@@ -150,7 +155,7 @@ do (exports = window)->
 			
 			for {fontName, fontType, fontStyle} in fontDefinitions
 				font = new Font fontName, fontType, fontStyle
-				# @TODO: chunked testing to avoid lag
+				# @TODO: avoid lag by testing in chunks
 				available = fontAvailabilityChecker.check font
 				if available
 					FD.testedFonts.push font
@@ -169,12 +174,13 @@ do (exports = window)->
 		flashvars = swfObjectId: swfId
 		params = allowScriptAccess: "always", menu: "false"
 		attributes = id: swfId, name: swfId
+		
 		swfCallback = (e)->
 			if e.success
 				swf = e.ref
 				
 				# This is an ugly block of code...
-				# @TODO: remove timeouts and intervals
+				# @TODO: avoid timeouts and intervals
 				tid = setTimeout ->
 					warn = (message)->
 						if console?.warn
@@ -209,14 +215,14 @@ do (exports = window)->
 				
 		# That is one dubious function signature
 		swfobj = swfobject.embedSWF(
-			FD.swf # specifies the URL of your SWF
-			dummy.id # specifies the id of the element to be replaced by your Flash content
-			"1", "1" # width and height specify the dimensions of your SWF
-			"9.0.0" # version specifies the Flash player version your SWF is published for
+			FD.swf # specifies the URL of the SWF file
+			dummy.id # specifies the id of the element to be replaced by the Flash content
+			"1", "1" # width and height specify the dimensions of the SWF
+			"9.0.0" # version specifies the Flash player version the SWF is published for
 			no # (optional) specifies the URL of an express install SWF and activates Adobe express install
-			flashvars # specifies flashvars, a <param> specific to flash
-			params # specifies <param> elements (nested within the <object> element )
-			attributes # attributes of the <object> element
+			flashvars # generates a <param name="flashvars" value="...">
+			params # generates <param> elements (nested within the <object> element)
+			attributes # sets attributes on the <object> element
 			swfCallback # (SWFObject 2.2+) a callback function that is called on both success or failure
 		)
 		
