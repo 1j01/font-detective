@@ -3,6 +3,13 @@
 after = (ms, fn)-> tid = setTimeout fn, ms; stop: -> clearTimeout tid
 every = (ms, fn)-> iid = setInterval fn, ms; stop: -> clearInterval iid
 
+# http://www.dustindiaz.com/smallest-domready-ever
+domReady = (callback)->
+	if /in/.test document.readyState
+		after 10, -> domReady callback
+	else
+		callback()
+
 
 do (exports = window)->
 	
@@ -12,7 +19,7 @@ do (exports = window)->
 	# Configuration
 	FD.swf = "./flash/FontList.swf"
 	
-	# The generic font families defined by CSS
+	# The generic font-family keywords defined by CSS
 	genericFontFamilies = [
 		'serif' # (e.g., Times)
 		'sans-serif' # (e.g., Helvetica)
@@ -28,8 +35,9 @@ do (exports = window)->
 			.split(",")
 	
 	
-	FD.testedFonts = []
-	
+	swfFonts = []
+	testedFonts = []
+	doneTestingFonts = no
 	
 	# The container for all font-detective related uglyness
 	container = document.createElement "div"
@@ -57,13 +65,6 @@ do (exports = window)->
 			# Escape \ to \\ then " to \" and surround with quotes
 			'"' + @name.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'
 	
-	# http://www.dustindiaz.com/smallest-domready-ever
-	domReady = (callback)->
-		if /in/.test document.readyState
-			after 10, -> domReady callback
-		else
-			callback()
-	
 	# Based off of http://www.lalit.org/lab/javascript-css-font-detect
 	fontAvailabilityChecker = do ->
 		
@@ -75,9 +76,8 @@ do (exports = window)->
 		# We use m or w because they take up the maximum width
 		# We use thin letters so that some matching fonts can get separated
 		testString = "mmmmmmmmmmlli"
-		# This seems to work just as well with the empty string, though
 		
-		# We test using 72px font size; it doesn't matter much
+		# We test using 72px font size; the bigger the better
 		testSize = "72px"
 		
 		# Create a span in the document to get the width of the text we use to test
@@ -91,8 +91,8 @@ do (exports = window)->
 			# Call this method once the document has a body
 			document.body.appendChild container
 			
+			# Get the dimensions of the three base fonts
 			for baseFontFamily in baseFontFamilies
-				# Get the dimensions of the three base fonts
 				span.style.fontFamily = baseFontFamily
 				container.appendChild span
 				baseWidths[baseFontFamily] = span.offsetWidth
@@ -113,89 +113,64 @@ do (exports = window)->
 				return yes if differs
 			return no
 	
-	loadedSWF = null
-	loadSWF = (cb)->
+	class SWF
+		constructor: ->
+			@fonts = null
+			@callbacks = []
+			@loading = no
+			@loaded = no
+			@failed = no
 		
-		domReady ->
-			
-			if loadedSWF
-				return cb null, loadedSWF
-			
-			flashvars = swfObjectId: swfId
-			params = allowScriptAccess: "always", menu: "false"
-			attributes = id: swfId, name: swfId
-			
-			swfCallback = (e)->
-				if e.success
-					cb null, loadedSWF = e.ref
-				else
-					cb new Error "Failed to load the SWF Object"
-			
-			document.body.appendChild container
-			
-			# That is one dubious function signature
-			swfobject.embedSWF(
-				FD.swf # specifies the URL of the SWF file
-				dummy.id # specifies the id of the element to be replaced by the Flash content
-				"1", "1" # width and height specify the dimensions of the SWF
-				"9.0.0" # version specifies the Flash player version the SWF is published for
-				no # (optional) specifies the URL of an express install SWF and activates Adobe express install
-				flashvars # generates a <param name="flashvars" value="...">
-				params # generates <param> elements (nested within the <object> element)
-				attributes # sets attributes on the <object> element
-				swfCallback # (SWFObject 2.2+) a callback function that is called on both success or failure
-			)
+		load: (cb)->
+			if @loaded
+				cb? null, @swf
+			else
+				@callbacks.push cb if cb?
+				
+				unless @loading or @loaded or @failed
+					@loading = yes
+					domReady =>
+						
+						flashvars = swfObjectId: swfId
+						params = allowScriptAccess: "always", menu: "false"
+						attributes = id: swfId, name: swfId
+						
+						embedCallback = (e)=>
+							@loading = no
+							if e.success
+								@loaded = yes
+							else
+								@failed = yes
+							for cb in @callbacks
+								if e.success
+									cb null, @swf = e.ref
+								else
+									cb new Error "Failed to load the SWF Object"
+						
+						document.body.appendChild container
+						
+						# That is one dubious function signature
+						swfobject.embedSWF(
+							FD.swf # the URL of the SWF file
+							dummy.id # the id of the element to be replaced by the Flash content
+							"1", "1" # width and height of the SWF
+							"9.0.0" # the Flash player version the SWF is published for
+							no # (optional) URL of an express install SWF and activates Adobe express install
+							flashvars # generates a <param name="flashvars" value="..."> element
+							params # generates <param> elements within the <object> element
+							attributes # sets attributes on the <object> element
+							embedCallback # a callback function that is called on both success or failure
+						)
+		
+		# getFonts: (cb)->
+		# 	if @fonts
+		# 		cb null, @fonts
+		# 	else
+		# 		@loadFonts cb
 	
-	consumeFontDefinitions = (fontDefinitions)->
-		
-		fontAvailabilityChecker.init()
-		
-		for {fontName, fontType, fontStyle} in fontDefinitions
-			font = new Font fontName, fontType, fontStyle
-			# @TODO: avoid lag by testing in chunks
-			available = fontAvailabilityChecker.check font
-			if available
-				FD.testedFonts.push font
-				for callback in FD.each.callbacks
-					callback font
-		
-		for callback in FD.all.callbacks
-			callback FD.testedFonts
-		
-		FD.all.callbacks = []
-		FD.each.callbacks = []
+	swf = new SWF
 	
-	
-	###
-	# FontDetective.each(function(font){})
-	# Calls back with a `Font` every time a font is detected and tested
-	###
-	FD.each = (callback)->
-		
-		callback font for font in FD.testedFonts
-		
-		FD.each.callbacks.push callback
-		
-	FD.each.callbacks = []
-	
-	
-	###
-	# FontDetective.all(function(fonts){})
-	# Calls back with an `Array` of `Font`s when all fonts are detected and tested
-	###
-	FD.all = (callback)->
-		
-		FD.all.callbacks.push callback
-		
-	FD.all.callbacks = []
-	
-	
-	
-	###
-	# FontDetective.load()
-	# Load the SWF object and start detecting fonts
-	###
-	FD.load = (cb)->
+	loadFonts = (cb)->
 		
 		fail = (message)->
 			err = new Error message
@@ -210,12 +185,11 @@ do (exports = window)->
 			else if console?.log
 				console.log message
 		
-		loadSWF (err, swf)->
+		swf.load (err, swf)->
 			if err
 				fail "Failed to load SWF Object"
 			else
 				
-				# @TODO: avoid timeouts and intervals
 				timeout = after 2000, ->
 					
 					unsupported = ""
@@ -239,4 +213,53 @@ do (exports = window)->
 					if swf.fonts
 						interval?.stop()
 						timeout?.stop()
-						consumeFontDefinitions swf.fonts()
+						swfFonts = swf.fonts()
+						consumeFlashFontDefinitions swfFonts
+	
+	consumeFlashFontDefinitions = (fontDefinitions)->
+		
+		fontAvailabilityChecker.init()
+		
+		for {fontName, fontType, fontStyle} in fontDefinitions
+			font = new Font fontName, fontType, fontStyle
+			available = fontAvailabilityChecker.check font
+			if available
+				testedFonts.push font
+				for callback in FD.each.callbacks
+					callback font
+		
+		for callback in FD.all.callbacks
+			callback testedFonts
+		
+		FD.all.callbacks = []
+		FD.each.callbacks =  []
+		doneTestingFonts = yes
+	
+	
+	###
+	# FontDetective.each(function(font){})
+	# Calls back with a `Font` every time a font is detected and tested
+	###
+	FD.each = (callback)->
+		callback font for font in testedFonts
+		unless doneTestingFonts
+			FD.each.callbacks.push callback
+			loadFonts (err)->
+				# callback err if err
+	
+	FD.each.callbacks = []
+	
+	
+	###
+	# FontDetective.all(function(fonts){})
+	# Calls back with an `Array` of `Font`s when all fonts are detected and tested
+	###
+	FD.all = (callback)->
+		if doneTestingFonts
+			callback testedFonts
+		else
+			FD.all.callbacks.push callback
+			loadFonts (err)->
+				# callback err if err
+	
+	FD.all.callbacks = []

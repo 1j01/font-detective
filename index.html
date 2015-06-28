@@ -26,6 +26,7 @@
 			}
 			
 			.sample-text {
+				font-size: 32px;
 				padding: 10px 0;
 				border: 1px solid #FFF;
 			}
@@ -40,7 +41,7 @@
 			}
 			.sample-font-family {
 				position: relative;
-				top: -14px;
+				top: -12px;
 				left: 0px;
 				width: 100%;
 				font-family: Monaco, sans-serif;
@@ -73,7 +74,6 @@
 			
 			statusError = (message)-> $("#status").text(message).css(color: "#a00")
 			statusText = (message)-> $("#status").text(message).css(color: "#000")
-			E = (t)-> document.createElement t
 			
 			# Global uncaught error handling
 			$(window).on "error", (e)->
@@ -86,40 +86,32 @@
 			unless swfobject.hasFlashPlayerVersion "9.0.0"
 				statusError "You don't have a compatible version of Flash installed"
 			else
-				statusText "Loading... (this may lag your browser for several seconds)"
-				
-				FontDetective.load (err)->
-					statusError err if err
+				statusText "Loading..."
 				
 				FontDetective.all (fonts)->
 					
 					statusText "Loaded #{fonts.length} fonts"
 					
 					text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-					size = "32px"
 					
 					for font in fonts
-						$(E("p"))
+						$("<p class='sample-text'>")
 							.appendTo "#content"
-							.addClass "sample-text"
 							.text text
-							.css
-								fontFamily: font
-								fontSize: size
-							.attr
-								contentEditable: yes
+							.css fontFamily: font
+							.attr contentEditable: yes
 							.on "keydown keyup input", (e)->
-								# If you've pasted html, make sure there's no font-family styles
+								# If you've pasted rich text, make sure there's no font-family styles
+								# (That would kind of ruin the demo, wouldn't it?)
 								$(@).find("*").css(fontFamily: "")
 								# Synchronize this html to other elements
 								# (careful not to set the html of this element,
 								# as that can mess up the cursor/caret position) 
 								$(".sample-text").not(@).html $(@).html()
 						
-						$(E("div"))
+						$("<div class='sample-font-family'>")
 							.appendTo "#content"
-							.addClass "sample-font-family"
-							.text "#{font}"
+							.text font.name
 				
 		</script>
 	</body>
