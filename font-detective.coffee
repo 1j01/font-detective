@@ -24,11 +24,11 @@ do (exports = window)->
 	
 	# The generic font-family keywords defined by CSS
 	genericFontFamilies = [
-		'serif' # (e.g., Times)
-		'sans-serif' # (e.g., Helvetica)
-		'cursive' # (e.g., Zapf-Chancery)
-		'fantasy' # (e.g., Western)
-		'monospace' # (e.g., Courier)
+		"serif" # (e.g. Times)
+		"sans-serif" # (e.g. Helvetica)
+		"cursive" # (e.g. Zapf-Chancery)
+		"fantasy" # (e.g. Western)
+		"monospace" # (e.g. Courier)
 	]
 	
 	# A list of common fonts, somewhat biased towards Windows
@@ -63,7 +63,7 @@ do (exports = window)->
 	class Font
 		constructor: (@name, @type, @style)->
 		toString: ->
-			# Escape \ to \\ then " to \" and surround with quotes
+			# Escape \ to \\ before escaping " to \" (so " doesn't become \\"), and surround with quotes
 			'"' + @name.replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + '"'
 	
 	# Based off of http://www.lalit.org/lab/javascript-css-font-detect
@@ -205,6 +205,12 @@ do (exports = window)->
 		FD.each.callbacks = []
 		doneTestingFonts = yes
 	
+	
+	###
+	# FontDetective.preload()
+	# Starts detecting fonts early
+	###
+	FD.preload = loadFonts
 	
 	###
 	# FontDetective.each(function(font){})

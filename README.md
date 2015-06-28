@@ -22,9 +22,6 @@ You can edit the sample text.
 			.appendTo("select");
 		
 		font.name; // e.g. 'Arial'
-		font.style; // e.g. 'regular'
-		font.type; // e.g. 'device'
-		
 		font.toString(); // e.g. '"Arial"'
 	});
 	
@@ -37,11 +34,14 @@ You can edit the sample text.
 
 ## Documentation
 
-### `FontDetective.each(function(font){})`
+### `FontDetective.each(callback)`
 * Calls back with a `Font` every time a font is detected and tested
 
-### `FontDetective.all(function(fonts){})`
+### `FontDetective.all(callback)`
 * Calls back with an `Array` of `Font`s when all fonts are detected and tested
+
+### `FontDetective.preload()`
+* Starts detecting fonts immediately
 
 ### `FontDetective.swf`
 * The location of the `FontList.swf` file, defaulting to `"./flash/FontList.swf"`
@@ -50,16 +50,16 @@ You can edit the sample text.
 * In a callback, indicates that a fallback was used,
   and that the results are not the complete set of available fonts
 
-### `class FontDetective.Font`
+### `FontDetective.Font`
 * Fonts are returned as instances of this class
 * The `font.name` property can be used to display the name of the font
-* The `font.style` property will probably always be `"regular"`
-* The `font.type` property will probably always be `"device"`
-* The font can be used anywhere you'd use a `font-family`
+* The `font` can be used anywhere you'd use a `font-family`
   (e.g. `div.style.fontFamily = font`)
 
 
 ## Todo
+
+* Reduce lag on less powerful computers and devices when testing fonts
 
 * Start testing common fonts immediately (i.e. before loading or giving up loading with Flash),
   calling `each` callbacks, but waiting for Flash success or failure for `all` callbacks
