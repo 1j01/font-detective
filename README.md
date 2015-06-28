@@ -3,7 +3,7 @@
 
 Detects your system fonts with Flash + JavaScript.
 
-If Flash is unavailable, it will fall back to a testing fonts from a list of common fonts.
+If Flash is unavailable, it will fall back to testing fonts from a list of common fonts.
 
 For Flash to work, the page should be served from a web server, i.e. not `file://`
 
