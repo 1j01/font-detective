@@ -58,6 +58,8 @@
 		<meta name="viewport" content="width=device-width" />
 	</head>
 	<body>
+		<a href="https://github.com/1j01/font-detective"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/38ef81f8aca64bb9a64448d0d70f1308ef5341ab/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png"></a>
+		
 		<h1><img src="img/font-detective.png" alt="Font Detective"/></h1>
 		
 		<div id="content">
@@ -67,9 +69,8 @@
 		</div>
 		
 		<script src="lib/jquery.min.js"></script>
-		<script src="lib/swfobject.js"></script>
 		<script src="lib/coffee-script.js"></script>
-		<script src="font-detective.coffee" type="text/coffeescript"></script>	
+		<script src="lib/font-detective.js"></script>	
 		<script type="text/coffeescript">
 			
 			statusError = (message)-> $("#status").text(message).css(color: "#a00")
@@ -82,36 +83,44 @@
 				err = e.originalEvent
 				statusError err.message
 			
-			statusText "Checking Flash version..."
-			unless swfobject.hasFlashPlayerVersion "9.0.0"
-				statusError "You don't have a compatible version of Flash installed"
-			else
-				statusText "Loading..."
+			statusText "Loading..."
+			
+			FontDetective.all (fonts)->
 				
-				FontDetective.all (fonts)->
-					
+				if FontDetective.incomplete
+					statusText "Detected #{fonts.length} fonts (incomplete because Flash is unavailable)"
+				else
 					statusText "Detected #{fonts.length} fonts"
+				
+				sampleText = "
+					Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+					sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+				"
+				
+				for font in fonts
+					$("<p class='sample-text'>")
+						.appendTo "#content"
+						.text sampleText
+						.css fontFamily: font
+						.attr contentEditable: yes
+						.on "keydown keypress keyup input paste", (e)->
+							$sampleText = $(@)
+							# If you've pasted rich text, make sure there's no font-family styles
+							# (That would kind of ruin the demo, wouldn't it?)
+							$sampleText.find("*").css(fontFamily: "")
+							# Store the position of the sample text on the screen
+							clientTop = $sampleText[0].getBoundingClientRect().top
+							# Synchronize this html to other elements
+							# (careful not to set the html of this element,
+							# as that can mess up the cursor/caret position) 
+							$(".sample-text").not($sampleText).html $sampleText.html()
+							# Scroll the document to account for changes in the sample text's position
+							# due to updating the content of any .sample-text elements above
+							$(window).scrollTop $sampleText.position().top - clientTop
 					
-					text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-					
-					for font in fonts
-						$("<p class='sample-text'>")
-							.appendTo "#content"
-							.text text
-							.css fontFamily: font
-							.attr contentEditable: yes
-							.on "keydown keyup input", (e)->
-								# If you've pasted rich text, make sure there's no font-family styles
-								# (That would kind of ruin the demo, wouldn't it?)
-								$(@).find("*").css(fontFamily: "")
-								# Synchronize this html to other elements
-								# (careful not to set the html of this element,
-								# as that can mess up the cursor/caret position) 
-								$(".sample-text").not(@).html $(@).html()
-						
-						$("<div class='sample-font-family'>")
-							.appendTo "#content"
-							.text font.name
+					$("<div class='sample-font-family'>")
+						.appendTo "#content"
+						.text font.name
 				
 		</script>
 	</body>

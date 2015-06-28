@@ -1,4 +1,7 @@
 
+# Dependencies
+swfobject = require "swfobject"
+
 # Helpers
 after = (ms, fn)-> tid = setTimeout fn, ms; stop: -> clearTimeout tid
 every = (ms, fn)-> iid = setInterval fn, ms; stop: -> clearInterval iid
@@ -165,6 +168,7 @@ do (exports = window)->
 	loadFonts = ->
 		
 		fallback = ->
+			FD.incomplete = true
 			testFonts (new Font(fontName) for fontName in someCommonFontNames)
 		
 		fontListSWF.load (err, swf)->

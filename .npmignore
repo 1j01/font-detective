@@ -1,0 +1,5 @@
+
+flash/src/
+*.coffee
+lib/*
+!lib/font-detective.js
