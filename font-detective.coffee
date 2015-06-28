@@ -38,9 +38,9 @@ do (exports = window)->
 			.sort()
 	
 	
-	swfFonts = []
 	testedFonts = []
 	doneTestingFonts = no
+	startedLoading = no
 	
 	# The container for all font-detective related uglyness
 	container = document.createElement "div"
@@ -71,20 +71,14 @@ do (exports = window)->
 		
 		# A font will be compared against three base fonts
 		# If it differs from one of the base measurements
-		# (which implies it didn't fall back to the base font), then the font is available
+		# (which implies it didn't fall back to the base font),
+		# then the font is considered available
 		baseFontFamilies = ["monospace", "sans-serif", "serif"]
 		
-		# We use m or w because they take up the maximum width
-		# We use thin letters so that some matching fonts can get separated
-		testString = "mmmmmmmmmmlli"
-		
-		# We test using 72px font size; the bigger the better
-		testSize = "72px"
-		
-		# Create a span in the document to get the width of the text we use to test
+		# Create a span for testing the width of text
 		span = document.createElement "span"
-		span.innerHTML = testString
-		span.style.fontSize = testSize
+		span.innerHTML = "mmmmmmmmmmlli"
+		span.style.fontSize = "72px"
 		baseWidths = {}
 		baseHeights = {}
 		
@@ -166,6 +160,8 @@ do (exports = window)->
 	fontListSWF = new FontListSWF
 	
 	loadFonts = ->
+		return if startedLoading
+		startedLoading = yes
 		
 		fallback = ->
 			FD.incomplete = true
@@ -191,26 +187,30 @@ do (exports = window)->
 	testFonts = (fonts)->
 		fontAvailabilityChecker.init()
 		
-		for font in fonts
-			available = fontAvailabilityChecker.check font
-			if available
-				testedFonts.push font
-				for callback in FD.each.callbacks
-					callback font
-		
-		for callback in FD.all.callbacks
-			callback testedFonts
-		
-		FD.all.callbacks = []
-		FD.each.callbacks = []
-		doneTestingFonts = yes
-	
+		i = 0
+		testingFonts = every 20, ->
+			for [0..5]
+				font = fonts[i]
+				available = fontAvailabilityChecker.check font
+				if available
+					testedFonts.push font
+					callback font for callback in FD.each.callbacks
+				i++
+				if i >= fonts.length
+					testingFonts.stop()
+					for callback in FD.all.callbacks
+						callback testedFonts
+					FD.all.callbacks = []
+					FD.each.callbacks = []
+					doneTestingFonts = yes
+					return
 	
 	###
 	# FontDetective.preload()
 	# Starts detecting fonts early
 	###
 	FD.preload = loadFonts
+	
 	
 	###
 	# FontDetective.each(function(font){})

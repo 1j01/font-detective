@@ -59,8 +59,6 @@ You can edit the sample text.
 
 ## Todo
 
-* Reduce lag on less powerful computers and devices when testing fonts
-
 * Start testing common fonts immediately (i.e. before loading or giving up loading with Flash),
   calling `each` callbacks, but waiting for Flash success or failure for `all` callbacks
   (and making sure not to check or return the same font twice)
