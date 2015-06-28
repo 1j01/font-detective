@@ -3,6 +3,12 @@
 
 Uses JavaScript + Flash to detect your system fonts.
 
+If Flash is unavailable, it will fall back to a list of common fonts.
+Either way, it tests each font to make sure it's available for use.
+For Flash to work, the page should be served from a web server, i.e. not `file://`
+
+See a nice [demo](http://1j01.github.io/font-detective).
+
 ```html
 <script src="lib/swfobject.js"></script>
 <script src="lib/font-detective.js"></script>
@@ -53,10 +59,14 @@ Uses JavaScript + Flash to detect your system fonts.
 
 ## Todo
 
-* Check for common fonts even when Flash is unavailable
+* Publish `font-detective@1.0.0`
 
-* If there's a reasonable way to detect fonts in node.js...
-  like a simple [module](https://github.com/devongovett/font-manager) I could depend on,
-  that could be cool.
-  I might want to package two separate versions though,
-  so the browser version doesn't depend on some native module.
+* Add "Fork me on Github" ribbon
+
+* Start testing common fonts immediately (i.e. before loading or giving up loading with Flash),
+  calling `each` callbacks, but waiting for Flash success or failure for `all` callbacks
+  (making sure not to check or return the same font twice)
+
+* Detect fonts in Node.js with [font-manager](https://github.com/devongovett/font-manager)
+  (It might be best to package two separate versions though,
+  so the browser version doesn't depend on a native module.)

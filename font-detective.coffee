@@ -29,10 +29,10 @@ do (exports = window)->
 	]
 	
 	# A list of common fonts, somewhat biased towards Windows
-	# @TODO: fallback to checking common font names when flash is unavailable
 	someCommonFontNames =
 		"Helvetica,Lucida Grande,Lucida Sans,Tahoma,Arial,Geneva,Monaco,Verdana,Microsoft Sans Serif,Trebuchet MS,Courier New,Times New Roman,Courier,Lucida Bright,Lucida Sans Typewriter,URW Chancery L,Comic Sans MS,Georgia,Palatino Linotype,Lucida Sans Unicode,Times,Century Schoolbook L,URW Gothic L,Franklin Gothic Medium,Lucida Console,Impact,URW Bookman L,Helvetica Neue,Nimbus Sans L,URW Palladio L,Nimbus Mono L,Nimbus Roman No9 L,Arial Black,Sylfaen,MV Boli,Estrangelo Edessa,Tunga,Gautami,Raavi,Mangal,Shruti,Latha,Kartika,Vrinda,Arial Narrow,Century Gothic,Garamond,Book Antiqua,Bookman Old Style,Calibri,Cambria,Candara,Corbel,Monotype Corsiva,Cambria Math,Consolas,Constantia,MS Reference Sans Serif,MS Mincho,Segoe UI,Arial Unicode MS,Tempus Sans ITC,Kristen ITC,Mistral,Meiryo UI,Juice ITC,Papyrus,Bradley Hand ITC,French Script MT,Malgun Gothic,Microsoft YaHei,Gisha,Leelawadee,Microsoft JhengHei,Haettenschweiler,Microsoft Himalaya,Microsoft Uighur,MoolBoran,Jokerman,DFKai-SB,KaiTi,SimSun-ExtB,Freestyle Script,Vivaldi,FangSong,MingLiU-ExtB,MingLiU_HKSCS,MingLiU_HKSCS-ExtB,PMingLiU-ExtB,Copperplate Gothic Light,Copperplate Gothic Bold,Franklin Gothic Book,Maiandra GD,Perpetua,Eras Demi ITC,Felix Titling,Franklin Gothic Demi,Pristina,Edwardian Script ITC,OCR A Extended,Engravers MT,Eras Light ITC,Franklin Gothic Medium Cond,Rockwell Extra Bold,Rockwell,Curlz MT,Blackadder ITC,Franklin Gothic Heavy,Franklin Gothic Demi Cond,Lucida Handwriting,Segoe UI Light,Segoe UI Semibold,Lucida Calligraphy,Cooper Black,Viner Hand ITC,Britannic Bold,Wide Latin,Old English Text MT,Broadway,Footlight MT Light,Harrington,Snap ITC,Onyx,Playbill,Bauhaus 93,Baskerville Old Face,Algerian,Matura MT Script Capitals,Stencil,Batang,Chiller,Harlow Solid Italic,Kunstler Script,Bernard MT Condensed,Informal Roman,Vladimir Script,Bell MT,Colonna MT,High Tower Text,Californian FB,Ravie,Segoe Script,Brush Script MT,SimSun,Arial Rounded MT Bold,Berlin Sans FB,Centaur,Niagara Solid,Showcard Gothic,Niagara Engraved,Segoe Print,Gabriola,Gill Sans MT,Iskoola Pota,Calisto MT,Script MT Bold,Century Schoolbook,Berlin Sans FB Demi,Magneto,Arabic Typesetting,DaunPenh,Mongolian Baiti,DokChampa,Euphemia,Kalinga,Microsoft Yi Baiti,Nyala,Bodoni MT Poster Compressed,Goudy Old Style,Imprint MT Shadow,Gill Sans MT Condensed,Gill Sans Ultra Bold,Palace Script MT,Lucida Fax,Gill Sans MT Ext Condensed Bold,Goudy Stout,Eras Medium ITC,Rage Italic,Rockwell Condensed,Castellar,Eras Bold ITC,Forte,Gill Sans Ultra Bold Condensed,Perpetua Titling MT,Agency FB,Tw Cen MT,Gigi,Tw Cen MT Condensed,Aparajita,Gloucester MT Extra Condensed,Tw Cen MT Condensed Extra Bold,PMingLiU,Bodoni MT,Bodoni MT Black,Bodoni MT Condensed,MS Gothic,GulimChe,MS UI Gothic,MS PGothic,Gulim,MS PMincho,BatangChe,Dotum,DotumChe,Gungsuh,GungsuhChe,MingLiU,NSimSun,SimHei,DejaVu Sans,DejaVu Sans Condensed,DejaVu Sans Mono,DejaVu Serif,DejaVu Serif Condensed,Eurostile,Matisse ITC,Bitstream Vera Sans Mono,Bitstream Vera Sans,Staccato222 BT,Bitstream Vera Serif,Broadway BT,ParkAvenue BT,Square721 BT,Calligraph421 BT,MisterEarl BT,Cataneo BT,Ruach LET,Rage Italic LET,La Bamba LET,Blackletter686 BT,John Handy LET,Scruff LET,Westwood LET"
 			.split(",")
+			.sort()
 	
 	
 	swfFonts = []
@@ -54,9 +54,7 @@ do (exports = window)->
 	
 	
 	###
-	# The font.name property can be used to display the name of the font
-	# 
-	# The font can be stringified and will be escaped for use in css
+	# A font class that can be stringified for use in css
 	# e.g. font.toString() or (font + ", sans-serif")
 	###
 	class Font
@@ -113,19 +111,18 @@ do (exports = window)->
 				return yes if differs
 			return no
 	
-	class SWF
+	class FontListSWF
 		constructor: ->
-			@fonts = null
 			@callbacks = []
 			@loading = no
 			@loaded = no
 			@failed = no
 		
-		load: (cb)->
+		load: (callback)->
 			if @loaded
-				cb? null, @swf
+				callback null, @swf
 			else
-				@callbacks.push cb if cb?
+				@callbacks.push callback
 				
 				unless @loading or @loaded or @failed
 					@loading = yes
@@ -138,12 +135,13 @@ do (exports = window)->
 						embedCallback = (e)=>
 							@loading = no
 							if e.success
+								@swf = e.ref
 								@loaded = yes
 							else
 								@failed = yes
 							for cb in @callbacks
 								if e.success
-									cb null, @swf = e.ref
+									cb null, @swf
 								else
 									cb new Error "Failed to load the SWF Object"
 						
@@ -161,67 +159,35 @@ do (exports = window)->
 							attributes # sets attributes on the <object> element
 							embedCallback # a callback function that is called on both success or failure
 						)
-		
-		# getFonts: (cb)->
-		# 	if @fonts
-		# 		cb null, @fonts
-		# 	else
-		# 		@loadFonts cb
 	
-	swf = new SWF
+	fontListSWF = new FontListSWF
 	
-	loadFonts = (cb)->
+	loadFonts = ->
 		
-		fail = (message)->
-			err = new Error message
-			if cb
-				cb err
-			else
-				throw err
+		fallback = ->
+			testFonts (new Font(fontName) for fontName in someCommonFontNames)
 		
-		warn = (message)->
-			if console?.warn
-				console.warn message
-			else if console?.log
-				console.log message
-		
-		swf.load (err, swf)->
+		fontListSWF.load (err, swf)->
 			if err
-				fail "Failed to load SWF Object"
+				fallback()
 			else
-				
 				timeout = after 2000, ->
-					
-					unsupported = ""
-					if location.protocol is "file:"
-						warn unsupported = "
-							FontDetective doesn't work from the file: protocol.
-							Start up a webserver, e.g. with python -m SimpleHTTPServer
-						"
-					else
-						warn "This is taking a while... :("
-					
-					timeout = after 2000, ->
-						interval?.stop()
-						return fail "
-							Couldn't connect with flash interface.
-							Timed out waiting for the SWF to expose an external method.
-							#{unsupported}
-						"
+					interval?.stop()
+					fallback()
 				
 				interval = every 50, ->
 					if swf.fonts
 						interval?.stop()
 						timeout?.stop()
-						swfFonts = swf.fonts()
-						consumeFlashFontDefinitions swfFonts
+						testFonts(
+							for {fontName, fontType, fontStyle} in swf.fonts()
+								new Font fontName, fontType, fontStyle
+						)
 	
-	consumeFlashFontDefinitions = (fontDefinitions)->
-		
+	testFonts = (fonts)->
 		fontAvailabilityChecker.init()
 		
-		for {fontName, fontType, fontStyle} in fontDefinitions
-			font = new Font fontName, fontType, fontStyle
+		for font in fonts
 			available = fontAvailabilityChecker.check font
 			if available
 				testedFonts.push font
@@ -232,7 +198,7 @@ do (exports = window)->
 			callback testedFonts
 		
 		FD.all.callbacks = []
-		FD.each.callbacks =  []
+		FD.each.callbacks = []
 		doneTestingFonts = yes
 	
 	
@@ -244,8 +210,7 @@ do (exports = window)->
 		callback font for font in testedFonts
 		unless doneTestingFonts
 			FD.each.callbacks.push callback
-			loadFonts (err)->
-				# callback err if err
+			loadFonts()
 	
 	FD.each.callbacks = []
 	
@@ -259,7 +224,6 @@ do (exports = window)->
 			callback testedFonts
 		else
 			FD.all.callbacks.push callback
-			loadFonts (err)->
-				# callback err if err
+			loadFonts()
 	
 	FD.all.callbacks = []

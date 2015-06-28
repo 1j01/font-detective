@@ -70,15 +70,15 @@
 		<script src="lib/swfobject.js"></script>
 		<script src="lib/coffee-script.js"></script>
 		<script src="font-detective.coffee" type="text/coffeescript"></script>	
-		<script type="text/coffeescript"> $ ->
+		<script type="text/coffeescript">
 			
 			statusError = (message)-> $("#status").text(message).css(color: "#a00")
 			statusText = (message)-> $("#status").text(message).css(color: "#000")
 			
 			# Global uncaught error handling
 			$(window).on "error", (e)->
-				# This shouldn't be needed, but it's good to display any (unforeseen) errors
-				# rather than to leave some message like "Loading..." on display (indefinitely)
+				# This shouldn't be needed, but it's better to display any unforeseen errors
+				# rather than to leave some message like "Loading..." on display indefinitely
 				err = e.originalEvent
 				statusError err.message
 			
@@ -90,7 +90,7 @@
 				
 				FontDetective.all (fonts)->
 					
-					statusText "Loaded #{fonts.length} fonts"
+					statusText "Detected #{fonts.length} fonts"
 					
 					text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
 					
