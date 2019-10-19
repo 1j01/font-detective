@@ -87,10 +87,7 @@
 			
 			FontDetective.all (fonts)->
 				
-				if FontDetective.incomplete
-					statusText "Detected #{fonts.length} fonts (incomplete because Flash is unavailable)"
-				else
-					statusText "Detected #{fonts.length} fonts"
+				statusText "Detected #{fonts.length} fonts"
 				
 				sampleText = "
 					Lorem ipsum dolor sit amet, consectetur adipisicing elit,
