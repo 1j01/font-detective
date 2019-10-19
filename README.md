@@ -1,6 +1,8 @@
 
 # ![Font Detective](img/font-detective.png)
 
+> **Note:** This is v1.x which supports Flash; v2.x drops support for Flash.
+
 Detects your system fonts with Flash + JavaScript.
 
 If Flash is unavailable, it will fall back to testing fonts from a list of common fonts.
@@ -66,3 +68,7 @@ You can edit the sample text.
 * Detect fonts in Node.js with [font-manager](https://github.com/devongovett/font-manager)
   (It might be best to package two separate versions of font-detective though,
   so the browser version doesn't depend on a native module.)
+
+## License
+
+MIT-licensed, see [LICENSE](LICENSE) for details
