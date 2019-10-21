@@ -1,7 +1,4 @@
 
-# Dependencies
-swfobject = require "swfobject"
-
 # Helpers
 after = (ms, fn)-> tid = setTimeout fn, ms; stop: -> clearTimeout tid
 every = (ms, fn)-> iid = setInterval fn, ms; stop: -> clearInterval iid
@@ -18,9 +15,6 @@ do (exports = window)->
 	
 	# Namespace
 	FD = exports.FontDetective = {}
-	
-	# Configuration
-	FD.swf = "./flash/FontList.swf"
 	
 	# The generic font-family keywords defined by CSS
 	genericFontFamilies = [
@@ -46,15 +40,6 @@ do (exports = window)->
 	container = document.createElement "div"
 	container.id = "font-detective"
 	# The document body won't always exist at this point, so append this later
-	
-	# An element whose only purpose is to be replaced (how sad)
-	dummy = document.createElement "div"
-	dummy.id = "font-detective-dummy"
-	container.appendChild dummy
-	
-	# The ID of the flash <object>
-	swfId = "font-detective-flash"
-	
 	
 	###
 	# A font class that can be stringified for use in css
@@ -108,81 +93,13 @@ do (exports = window)->
 				return yes if differs
 			return no
 	
-	class FontListSWF
-		constructor: ->
-			@callbacks = []
-			@loading = no
-			@loaded = no
-			@failed = no
-		
-		load: (callback)->
-			if @loaded
-				callback null, @swf
-			else
-				@callbacks.push callback
-				
-				unless @loading or @loaded or @failed
-					@loading = yes
-					domReady =>
-						
-						flashvars = swfObjectId: swfId
-						params = allowScriptAccess: "always", menu: "false"
-						attributes = id: swfId, name: swfId
-						
-						embedCallback = (e)=>
-							@loading = no
-							if e.success
-								@swf = e.ref
-								@loaded = yes
-							else
-								@failed = yes
-							for cb in @callbacks
-								if e.success
-									cb null, @swf
-								else
-									cb new Error "Failed to load the SWF Object"
-						
-						document.body.appendChild container
-						
-						# That is one dubious function signature
-						swfobject.embedSWF(
-							FD.swf # the URL of the SWF file
-							dummy.id # the id of the element to be replaced by the Flash content
-							"1", "1" # width and height of the SWF
-							"9.0.0" # the Flash player version the SWF is published for
-							no # (optional) URL of an express install SWF and activates Adobe express install
-							flashvars # generates a <param name="flashvars" value="..."> element
-							params # generates <param> elements within the <object> element
-							attributes # sets attributes on the <object> element
-							embedCallback # a callback function that is called on both success or failure
-						)
-	
-	fontListSWF = new FontListSWF
-	
 	loadFonts = ->
 		return if startedLoading
 		startedLoading = yes
 		
-		fallback = ->
-			FD.incomplete = true
+		FD.incomplete = true
+		domReady =>
 			testFonts (new Font(fontName) for fontName in someCommonFontNames)
-		
-		fontListSWF.load (err, swf)->
-			if err
-				fallback()
-			else
-				timeout = after 2000, ->
-					interval?.stop()
-					fallback()
-				
-				interval = every 50, ->
-					if swf.fonts
-						interval?.stop()
-						timeout?.stop()
-						testFonts(
-							for {fontName, fontType, fontStyle} in swf.fonts()
-								new Font fontName, fontType, fontStyle
-						)
 	
 	testFonts = (fonts)->
 		fontAvailabilityChecker.init()

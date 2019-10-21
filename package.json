@@ -1,10 +1,9 @@
 {
   "name": "font-detective",
-  "version": "1.1.2",
+  "version": "2.0.0",
   "description": "Detect fonts in-browser",
   "main": "lib/font-detective.js",
   "scripts": {
-    "build-swf": "mxmlc -warnings=false -debug=false -static-link-runtime-shared-libraries=true -optimize=true -o flash/FontList.swf -file-specs flash/src/FontList.as",
     "prepublish": "browserify -t coffeeify --extension=\".coffee\" -o lib/font-detective.js font-detective.coffee",
     "start": "hs -o"
   },
@@ -32,8 +31,6 @@
     "browserify": "^10.2.4",
     "coffee-script": "^1.8.0",
     "coffeeify": "^1.1.0",
-    "flex-sdk": "^4.6.0-0",
-    "http-server": "^0.8.0",
-    "swfobject": "^2.2.1"
+    "http-server": "^0.8.0"
   }
 }
