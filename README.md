@@ -3,9 +3,9 @@
 
 > **Note:** v1.x supported getting a full list of fonts with Flash; v2.x drops support for Flash.
 
-Detects your system fonts with JavaScript, from a list of common fonts.
+Detects available system fonts with JavaScript, from a list of common fonts.
 
-See a nice [demo](http://1j01.github.io/font-detective).
+See a [demo](http://1j01.github.io/font-detective).
 You can edit the sample text.
 
 ```html
@@ -31,12 +31,14 @@ You can edit the sample text.
 
 ### `FontDetective.each(callback)`
 * Calls back with a `Font` every time a font is detected and tested
+* Fonts are tested in chunks to avoid totally freezing the page
 
 ### `FontDetective.all(callback)`
 * Calls back with an `Array` of `Font`s when all fonts are detected and tested
 
 ### `FontDetective.preload()`
 * Starts detecting fonts immediately
+* Not needed if you're going to call `all` or `each` right away
 
 ### `FontDetective.Font`
 * Fonts are returned as instances of this class
